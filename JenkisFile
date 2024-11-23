@@ -1,0 +1,75 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Setup') {
+            steps {
+                // Configura el directorio como seguro
+                bat 'git config --global --add safe.directory C:/Users/Jadri/OneDrive/Escritorio/Api_Jenkins/api-rest-cc'
+            }
+        }
+
+        stage('Checkout') {
+            steps {
+                dir('C:/Users/Jadri/OneDrive/Escritorio/Api_Jenkins/api-rest-cc') {
+                    script {
+                        echo "Usando el repositorio clonado localmente"
+                        bat 'git fetch --all'
+                    }
+                }
+            }
+        }
+
+        stage('Verify Gradle Files') {
+            steps {
+                dir('C:/Users/Jadri/OneDrive/Escritorio/Api_Jenkins/api-rest-cc') {
+                    script {
+                        // Verifica que gradlew y gradlew.bat estén presentes en el directorio
+                        bat 'dir'  // Muestra la lista de archivos en Windows
+                    }
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('C:/Users/Jadri/OneDrive/Escritorio/Api_Jenkins/api-rest-cc') {
+                    script {
+                        // Verifica si gradlew.bat está presente y lo ejecuta
+                        echo "Iniciando build con gradlew"
+                        bat 'gradlew.bat build'  // En Windows, se debe usar gradlew.bat
+                    }
+                }
+            }
+        }
+
+        stage('Run Docker Compose') {
+            steps {
+                dir('C:/Users/Jadri/OneDrive/Escritorio/Api_Jenkins/api-rest-cc') {
+                    script {
+                        echo "Ejecutando Docker Compose"
+                        // Especificamos explícitamente la ruta al archivo docker-compose.yml
+                        bat 'docker-compose -f C:/Users/Jadri/OneDrive/Escritorio/Api_Jenkins/api-rest-cc/docker-compose.yml up -d'
+                    }
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                dir('C:/Users/Jadri/OneDrive/Escritorio/Api_Jenkins/api-rest-cc') {
+                    script {
+                        // Ejecuta las pruebas con gradlew
+                        bat 'gradlew.bat test' 
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline terminado"
+        }
+    }
+}
